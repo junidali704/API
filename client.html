@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Job Submission</title>
+    <style>
+    body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+.form-container {
+    max-width: 400px;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.hidden {
+    display: none;
+}
+
+#notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 10px;
+    border-radius: 5px;
+    display: none;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.success {
+    background-color: #4caf50;
+    color: white;
+}
+
+.error {
+    background-color: #f44336;
+    color: white;
+}
+
+.form-container input[type="text"],
+.form-container input[type="email"],
+.form-container input[type="password"],
+.form-container textarea,
+.form-container select {
+    width: calc(100% - 22px);
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+.form-container select {
+    cursor: pointer;
+}
+
+.form-container button {
+    width: calc(100% - 22px);
+    padding: 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 16px;
+}
+
+.form-container button:hover {
+    background-color: #0056b3;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #007bff;
+}
+
+
+    </style>
+  </head>
+  <body>
+    <h3 style="padding-left:45%">Login For client</h3>
+    <div id="login-form" class="form-container">
+      <h2>Login</h2>
+      <input type="text" id="login-email" placeholder="Email" required />
+      <input
+        type="password"
+        id="login-password"
+        placeholder="Password"
+        required
+      />
+      <button onclick="login()">Login</button>
+    </div>
+
+    <div id="signup-form" class="form-container hidden">
+      <h2>Sign Up</h2>
+      <input type="text" id="signup-name" placeholder="Full Name" required />
+      <input type="email" id="signup-email" placeholder="Email" required />
+      <input
+        type="password"
+        id="signup-password"
+        placeholder="Password"
+        required
+      />
+      <button onclick="signup()">Sign Up</button>
+    </div>
+
+    <div id="job-form" class="form-container hidden">
+      <h2>Submit Job</h2>
+      <input
+        type="text"
+        id="job-title"
+        placeholder="Job Title"
+        required
+        name="job_title"
+      />
+      <input type="text" id="job-email" placeholder="Email" required name="email"/>
+       
+      <textarea
+        id="job-description"
+        placeholder="Job Description"
+        required
+        name="description"
+      ></textarea>
+      <input type="datetime-local" id="job-deadline" required name="deadline" />
+      <select id="job-priority" required name="priority">
+        <option value="high">High</option>
+        <option value="medium">Medium</option>
+        <option value="low">Low</option>
+      </select>
+      <button onclick="submitJob()">Submit</button>
+    </div>
+
+    <div id="job-results" class="hidden">
+      <h2>Job Results</h2>
+      <div id="result-container"></div>
+    </div>
+
+    <div id="notification"></div>
+
+    <script>
+async function login() {
+  const email = document.getElementById("login-email").value;
+  const password = document.getElementById("login-password").value;
+
+  try {
+    const formData = new FormData();
+    formData.append("email", email);
+    formData.append("password", password);
+
+    const response = await fetch("/login/", {
+      method: "POST",
+      body: formData,
+    });
+    const data = await response.json();
+
+    // Store the access token in local storage
+    localStorage.setItem("accessToken", data.access_token);
+
+    // Hide the login form
+    document.getElementById("login-form").classList.add("hidden");
+
+    // Show the job submission form
+    document.getElementById("job-form").classList.remove("hidden");
+    document.getElementById("job-results").classList.add("hidden");
+  } catch (error) {
+    console.error("Error during login:", error);
+  }
+}
+
+      async function submitJob() {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          console.error("Access token not found");
+          return;
+        }
+
+        // Create a FormData object
+        const formData = new FormData();
+        formData.append(
+          "job_title",
+          document.getElementById("job-title").value
+        );
+        formData.append(
+          "description",
+          document.getElementById("job-description").value
+        );
+        formData.append("email", document.getElementById("job-email").value);
+
+        // Adjust the deadline to match ISO 8601 format
+        const deadline = document.getElementById("job-deadline").value + ":00";
+        formData.append("deadline", deadline);
+
+        formData.append(
+          "priority",
+          document.getElementById("job-priority").value
+        );
+
+        try {
+          // Make POST request to backend API for job submission
+          const response = await fetch("/submit_job/", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: formData,
+          });
+
+          if (response.ok) {
+            // Show success notification
+            showNotification("Job submitted successfully!", "success");
+          } else {
+            // Show error notification
+            showNotification(
+              "Error: Failed to submit job. Please try again.",
+              "error"
+            );
+          }
+        } catch (error) {
+          console.error("Error during job submission:", error);
+        }
+      }
+
+      function showNotification(message, type) {
+        const notification = document.getElementById("notification");
+        notification.textContent = message;
+
+        // Set background color based on notification type
+        notification.style.backgroundColor =
+          type === "success" ? "#4CAF50" : "#f44336";
+
+        // Show notification
+        notification.style.display = "block";
+
+        // Hide notification after 3 seconds (adjust duration as needed)
+        setTimeout(() => {
+          notification.style.display = "none";
+        }, 3000);
+      }
+    </script>
+  </body>
+</html>
