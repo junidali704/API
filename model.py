@@ -1,47 +1,4 @@
-# # models.py
 
-# from sqlalchemy import Column, Integer, String
-# from db import Base
-
-
-# # User model representing the user table
-# class reg(Base):
-#     __tablename__ = "signin"
-
-#     id = Column(Integer, primary_key=True, index=True)
-#     email = Column(String, unique=True, index=True)
-#     password = Column(String)
-
-
-# class enrty(Base):
-#     __tablename__ = "sinup"
-
-#     id = Column(Integer, primary_key=True, index=True)
-#     email = Column(String, unique=True, index=True)
-#     password = Column(String)
-#     full_name = Column(String, index=True)
-# models.py
-
-# from sqlalchemy import Column, Integer, String
-# from db import Base
-
-
-# # User model representing the user table
-# class reg(Base):
-#     __tablename__ = "signin"
-
-#     id = Column(Integer, primary_key=True, index=True)
-#     email = Column(String, unique=True, index=True)
-#     password = Column(String)
-
-
-# class enrty(Base):
-#     __tablename__ = "sinup"
-
-#     id = Column(Integer, primary_key=True, index=True)
-#     email = Column(String, unique=True, index=True)
-#     password = Column(String)
-#     full_name = Column(String, index=True)
 
 
 from sqlalchemy import Column, DateTime, Integer, String
